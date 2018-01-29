@@ -53,7 +53,7 @@
 		https://www.youtube.com/watch?v=AT1Vul54qYU
 	-->
 	
-	<canvas id="FungiCanvas" style="border:1px solid red; position:absolute; width:256px; height:256px; left:1000px; top:10px;"></canvas>
+	<canvas id="MainCanvas" style="border:1px solid red; position:absolute; width:256px; height:256px; left:1000px; top:10px;"></canvas>
 
 	<!--
 	<div id="itm" class="NodeBox" style="width:300px; top:100px; left:100px;">
@@ -72,31 +72,32 @@
 	</div>
 	-->
 	<script type="module">
-		import Sage from "./lib/sage/Sage.js";
-		import NodeBox from "./lib/NodeBox.js";
-		import EMan from "./lib/EditorManager.js";
-		import Fungi from "./lib/fungi/Fungi.js";
-		import gl from "./lib/fungi/gl.js";
-		import Shader from "./lib/fungi/util/Shader.js";
-		import Quad from "./lib/fungi/Quad.js";
+		import Sage		from "./lib/sage/Sage.js";
+		import NodeBox	from "./lib/NodeBox.js";
+		import EMan		from "./lib/EditorManager.js";
+
+		import GLCanvas	from "./lib/fungiMini/GLCanvas.js";
+		import Quad		from "./lib/fungiMini/Quad.js";
+		import Shader	from "./lib/fungiMini/Shader.js";
 
 		var nNoise, nFloat, nVec4, nFinal, nGlobal,nMultiNode,nSmoothStep;
-		var shader,quad;
+		var gl,shader,quad;
 
 		window.addEventListener("load",function(){
 			EMan.init();
 			
-			Fungi.init();
-			quad = Quad();
-			shader = new Shader();
+			gl		= new GLCanvas("MainCanvas");
+			shader	= new Shader(gl);
+			quad	= Quad(gl);
 
-			nNoise = new NoiseNode();
-			nFloat = new FloatNode();
-			nVec4 = new Vec4Node();
-			nFinal = new FinalColorNode();
-			nGlobal = new GlobalNode();
-			nMultiNode = new MultiNode();
-			nSmoothStep = new SmoothStepNode();
+
+			nNoise		= new NoiseNode();
+			nFloat		= new FloatNode();
+			nVec4		= new Vec4Node();
+			nFinal		= new FinalColorNode();
+			nGlobal		= new GlobalNode();
+			nMultiNode	= new MultiNode();
+			nSmoothStep	= new SmoothStepNode();
 
 			
 			nFloat.connectTo("Float","W",nVec4);
@@ -140,24 +141,12 @@
 			if(e.keyCode == 32){
 				var frag = processNodes(nFinal);
 				var code = glsl(frag);
-				//console.log(code);
 				
-				if(shader.load(code.v,code.f)){}
-					gl.ctx.bindVertexArray(quad.ptr);
-
-					if(quad.isIndexed)	gl.ctx.drawElements(gl.ctx.TRIANGLES, quad.count, gl.ctx.UNSIGNED_SHORT, 0); 
-					else				gl.ctx.drawArrays(gl.ctx.TRIANGLES, 0, quad.count);
+				if(shader.load(code.v,code.f)){
+					gl.render(quad,shader);
 				}
+			}
 		});
-
-		/*
-			float n = noise();
-			float f = 1;
-
-			Vec4 v = new Vec4(n,n,n,f);
-
-			FinalColor = v;
-		*/
 
 
 
@@ -203,13 +192,6 @@
 			return { v:`#version 300 es
 			layout(location=0) in vec3 a_position;
 			layout(location=2) in vec2 a_uv;
-
-			uniform UBOTransform{
-				mat4 matProjection;
-				mat4 matCameraView;
-				vec3 posCamera;
-				float fTime;
-			};
 
 			out vec2 o_uv;
 

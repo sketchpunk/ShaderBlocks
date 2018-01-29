@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+<body>
+
+
+<style>
+	html,body{margin:0px; padding:0px; width:100%; height:100%;}
+	*{font-family: Verdana;}
+	
+	.NodeBox { display:grid; position:absolute;
+		grid-gap: 0px;
+		grid-template-columns: auto auto auto;
+  		grid-template-rows: auto auto;
+	}
+
+	.NodeBox > header{ grid-column: 1/4; cursor: pointer;
+		-webkit-touch-callout: none; -webkit-user-select: none;
+		-moz-user-select: none; -ms-user-select: none; user-select: none;
+	}
+	.NodeBox > nav:nth-of-type(1){ grid-column: 1/2; grid-row: 2/3; }
+	.NodeBox > nav:nth-of-type(2){ grid-column: 3/4; grid-row: 2/3; }
+	.NodeBox > main{ grid-column: 2/3; grid-row: 2/3; margin:0px; padding:0px;}
+	.NodeBox > nav > div { cursor:pointer; }
+
+
+
+	/*ShaderForge*/
+	body{ background-color:#777777; }
+	.NodeBox > header { grid-column: 2/3; z-index:100;
+		box-shadow: 0px -1px 4px 2px #00000099;
+		color:#c5c5c5; text-align:center; 
+		background-color:#3f4044;
+		padding:2px 0px 2px 0px; border-radius:5px 5px 0px 0px;
+		border:#5a5a5a solid; border-width:1px 1px 0px 1px;
+	}
+
+	.NodeBox > main { font-size:0; z-index:99; box-shadow: 0px 2px 5px 2px #00000099;
+		background-color:#3f4044;
+		border-radius:0px 0px 5px 5px;
+		border:#5a5a5a solid; border-width:0px 1px 1px 1px;
+	}
+
+	.NodeBox > main > canvas:last-child{border-radius:0px 0px 5px 5px;}
+
+	.NodeBox > nav > div { background-color:#474747; border:1px solid #595959; padding:1px 6px; margin:6px 0px; color:#ffffff99; font-size:12px;
+	box-shadow: 0px 0px 3px 1px #00000066;  }
+
+	.NodeBox > nav:nth-of-type(1) > div { border-radius:5px 0px 0px 5px; }
+	.NodeBox > nav:nth-of-type(2) > div { border-radius:0px 5px 5px 0px; }
+
+	.NodeBox > nav > div.red { background-color:#5d3031; border-color:#b62725; }
+	.NodeBox > nav > div.green { background-color:#2d582d; border-color:#237d25; }
+	.NodeBox > nav > div.blue { background-color:#353868; border-color:#2c2fab; }
+	.NodeBox > nav > div.alpha { background-color:#696969; border-color:#bbbbbb; }
+
+
+	/*Other
+	body{ background-color:#777777;  }
+
+	.NodeBox{ box-shadow: 0px 0px 7px 3px #00000077; border-radius:5px; background-color:#44444499; }
+
+	.NodeBox > header { z-index:100;
+		color:#e0e0e0; text-align:center; 
+		background-color:#4f7526;
+		padding:3px 0px 3px 0px; border-radius:5px 5px 0px 0px;
+	}
+
+	.NodeBox > main {  box-shadow: 0px -2px 5px 2px #00000044; z-index:99; }
+
+	.NodeBox > nav > div { color:#ffffffcc; padding:2px 6px; border-bottom:1px solid #00000088; font-size:12px;}
+
+	.NodeBox > nav:nth-of-type(1){ background-color:#333333ff; border-radius:0px 0px 0px 5px; }
+	.NodeBox > nav:nth-of-type(2){ background-color:#333333ff; border-radius:0px 0px 5px 0px; }
+
+	.NodeBox > nav > div.red { background-color:#ff0000;  }
+	.NodeBox > nav > div.green { background-color:#00ff0099;  }
+	.NodeBox > nav > div.blue { background-color:#0000FF; }
+	.NodeBox > nav > div.alpha { background-color:#888888; }*/
+</style>
+
+	<div id="itm" class="NodeBox" style="top:20px; left:20px;">
+		<header>Header</header>
+		<nav>
+			<div class=""><span>RGB</span></div>
+			<div class="red"><span>R</span></div>
+			<div class="green"><span>G</span></div>
+			<div class="blue"><span>B</span></div>
+			<div class="alpha"><span>A</span></div>
+		</nav>
+		<nav>
+			<div><span>A</span></div>
+			<div><span>UV</span></div>
+			<div><span>Tex</span></div>
+		</nav>
+		<main><canvas style="width:128px; height:128px; background-color:black;"></canvas>
+			<div style="font-size:11px; color:white;">Demo Test</div></main>
+	</div>
+
+<br><br><br><br><br><br><br><br><br>
+</body>
+</html>

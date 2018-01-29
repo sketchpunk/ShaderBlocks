@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+<body>
+
+<canvas id="glcanvas" style="width:256px; height:256px; border:1px solid red;"></canvas>
+
+<script type="module">
+	import GLCanvas from "../src/lib/fungiMini/GLCanvas.js";
+	import Vao from "../src/lib/fungiMini/Vao.js";
+	import Quad from "../src/lib/fungiMini/Quad.js";
+	import Shader from "../src/lib/fungiMini/Shader.js";
+
+	var gl, quad, shader;
+
+	window.addEventListener("load",function(){
+		gl = new GLCanvas("glcanvas");
+		quad = Quad(gl);
+		loadShader();
+
+		gl.render(quad,shader);
+	});
+
+	function loadShader(){
+		var v = `#version 300 es
+			layout(location=0) in vec3 a_position;
+			layout(location=2) in vec2 a_uv;
+
+			out vec2 o_uv;
+
+			void main(void){
+				o_uv = a_uv;
+				gl_Position	= vec4(a_position,1.0); //matProjection * 
+			}`;
+
+		var f = `#version 300 es
+			precision mediump float;
+			in vec2 o_uv;
+
+			float rand(vec2 n){ return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453); }
+
+			float noise(vec2 p){
+				vec2 ip = floor(p);
+				vec2 u = fract(p);
+				u = u*u*(3.0-2.0*u);
+
+				float res = mix(
+					mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x),
+					mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y);
+				return res*res;
+			}
+
+			out vec4 outColor;
+			void main(void){ 
+				float n = noise(o_uv * 40.5);
+				n = smoothstep(0.3,0.35,n);
+				outColor = vec4(n,n,n,1.0);
+				//outColor = vec4(1.0,0.0,0.0,1.0);
+			}`;
+
+		shader = new Shader(gl,v,f);
+	}
+</script>
+
+</body>
+</html>
