@@ -1,0 +1,45 @@
+/* ##############################################################
+MISC
+############################################################## */
+body{ /* Background Texture in CSS :: http://lea.verou.me/css3patterns/# */
+	background-color:#38525e;
+	background-size:10px 10px, 10px 10px;
+	background-position:-1px -1px, -1px -1px;
+	background-image:
+		linear-gradient(#476978 1px, transparent 1px),
+		linear-gradient(90deg, #476978 1px, transparent 1px);
+}
+
+
+/* ##############################################################
+Node Boxes
+############################################################## */
+
+.NodeBox > div { grid-column: 2/3; grid-row: 1/3; z-index:50;
+	border:1px solid #4a4a4a; border-radius:5px; 
+	background-color:#3f4044aa; box-shadow: 0px 0px 5px 1px #00000088; }
+
+.NodeBox > header { grid-column: 2/3; grid-row: 1/2; z-index:51; padding:2px 0px 2px 0px;
+	color:#c5c5c5; text-align:center; font-size:12px; }
+
+.NodeBox > main { font-size:0; z-index:51; }
+
+.NodeBox > main > canvas:last-child{ border-radius:0px 0px 5px 5px; }
+
+.NodeBox > nav > div { background-color:#474747aa; color:#ffffff99; font-size:12px; z-index:49;
+	border:1px solid #595959; padding:1px 6px; margin:6px 0px;
+	box-shadow: 0px 0px 4px 1px #000000aa; }
+
+.NodeBox > nav:nth-of-type(1) > div { border-radius:5px 0px 0px 5px; }
+.NodeBox > nav:nth-of-type(2) > div { border-radius:0px 5px 5px 0px; }
+
+.NodeBox > nav > div.red { background-color:#5d3031; border-color:#b62725; }
+.NodeBox > nav > div.green { background-color:#2d582d; border-color:#237d25; }
+.NodeBox > nav > div.blue { background-color:#353868; border-color:#2c2fab; }
+.NodeBox > nav > div.alpha { background-color:#696969; border-color:#bbbbbb; }
+
+
+/* ##############################################################
+Connections
+############################################################## */
+.Conn_Dash{ stroke-dasharray:20,5,5,5,5,5; stroke-width:2; stroke:#86d530; }
