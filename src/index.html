@@ -21,22 +21,10 @@
 	
 	<canvas id="MainCanvas" style="border:1px solid red; position:absolute; width:256px; height:256px; left:1000px; top:10px;"></canvas>
 
-	<!--
-	<div id="itm" class="NodeBox" style="width:300px; top:100px; left:100px;">
-		<header>Header</header>
-		<nav>
-			<div><i>0</i><span>Input A</span></div>
-			<div><i>0</i><span>Input A</span></div>
-			<div><i>0</i><span>Input A</span></div>
-		</nav>
-		<nav>
-			<div><span>Input A</span><i>0</i></div>
-		</nav>
-		<main>
-			details
-		</main>
+	<div style="position:absolute; top:0px; left:0px; color:white; font-size:11px; padding:6px;">
+		Shader Blocks v0.0.0.1 :: Double click on preview areas to process nodes for rendering.
 	</div>
-	-->
+
 	<script type="module">
 		import Sage		from "./lib/sage/Sage.js";
 		import NodeBox	from "./lib/NodeBox.js";
@@ -46,325 +34,47 @@
 		import Quad		from "./lib/fungiMini/Quad.js";
 		import Shader	from "./lib/fungiMini/Shader.js";
 
+		import { FinalNode, UVNode } from "../src/lib/nodes/Data.js";
+		import { Noise2DNode } from "./lib/nodes/Noise.js";
+		import { FloatNode, Vec4Node } from "./lib/nodes/Vars.js";
+		import { MultiplyNode, SmoothStepNode } from "./lib/nodes/Math.js";
+		
+
+		var nUV, nMulti;
 		var nNoise, nFloat, nVec4, nFinal, nGlobal,nMultiNode,nSmoothStep;
 		var gl,shader,quad;
 
 		window.addEventListener("load",function(){
 			EMan.init();
-			
-			gl		= new GLCanvas("MainCanvas");
-			shader	= new Shader(gl);
-			quad	= Quad(gl);
+
+			nFinal = new FinalNode(1,700,50);
+			nFloat = new FloatNode(2,40,100,"1.0").setVar("SomeVar");
+			nVec4 = new Vec4Node(4,500,300);
+			nUV = new UVNode(4,50,200);
+			nNoise = new Noise2DNode(5,400,30);
+			nMulti = new MultiplyNode(6,200,30,"40.1");
+			nSmoothStep = new SmoothStepNode(7,300,200);
 
 
-			nNoise		= new NoiseNode();
-			nFloat		= new FloatNode();
-			nVec4		= new Vec4Node();
-			nFinal 		= new FinalColorNode();
-			nGlobal		= new GlobalNode();
-			nMultiNode	= new MultiNode();
-			nSmoothStep	= new SmoothStepNode();
+			//nFloat.connectTo("F","R",nFinal);
+			//nFloat.connectTo("F","G",nFinal);
+			//nFloat.connectTo("F","B",nFinal);
+			//nFloat.connectTo("F","A",nFinal);
 
-			
-			nFloat.connectTo("Float","W",nVec4);
-			//nNoise.connectTo("F","X",nVec4);
-			//nNoise.connectTo("F","Y",nVec4);
-			//nNoise.connectTo("F","Z",nVec4);
-			nNoise.connectTo("F","f",nSmoothStep);
+			//nVec4.connectTo("V","VEC",nFinal);
 
-			nVec4.connectTo("XYZW","RGBA",nFinal);
-			nGlobal.connectTo("UV","v2",nMultiNode);
-			nMultiNode.connectTo("v2","Vec2",nNoise);
-
-			nSmoothStep.connectTo("f","X",nVec4);
-			nSmoothStep.connectTo("f","Y",nVec4);
-			nSmoothStep.connectTo("f","Z",nVec4);
-			
-
-			processNodes(nFinal);
-			
-			/**/
-
-			//EMan.svg.createLine(0, 0, 100, 100, "#000000", 2);
-
-			/*
-			new NodeBox().setHeader("Noise")
-				.setPosition(400,20)
-				.addInput("IA")
-				.addOutput("OR")
-				.addOutput("OG")
-				.addOutput("OB");
-			
-			new NodeBox().setHeader("Shrink")
-				.setPosition(100,100)
-				.addInput("IA")
-				.addOutput("OR");
-			*/
-			//Sage.elmEvt("itm","mousedown",function(e){ Sage.startDrag(e,this); });
+			EMan.processNodes(nFinal);
 		});
 
 		window.addEventListener("keyup",function(e){
+			
 			if(e.keyCode == 32){
-				var frag = processNodes(nFinal);
-				var code = glsl(frag);
-				
-				if(shader.load(code.v,code.f)){
-					gl.render(quad,shader);
-				}
+				var frag = EMan.processNodes(nFinal);
+				EMan.preview.run(frag);
+
+				nFinal.copyCanvas( EMan.preview.gl.canvas );
 			}
 		});
-
-
-
-		function processNodes(node){
-			var nAry = [node];
-			var iAry;
-			var n,onn, conn;
-			var nComplete = [];
-			var glsl = [];
-			var code = "";
-
-			while( (n = nAry.pop()) != undefined ){
-				console.log(n.clsName,n.id,":", n.getGLSL());
-				
-				if( (code = n.getGLSL()) != null) glsl.push(code);
-
-				nComplete.push(n.id);
-
-				for(var i in n.inputs){
-					if(!n.inputs[i].isConnected) continue;
-
-					conn = n.inputs[i].conn;
-					onn = conn.outputNode;
-
-					//console.log("---", onn.clsName
-					//	,conn.oConnector.name
-					//	,conn.iConnector.name
-					//	,nComplete.indexOf(onn.id)
-					//);
-
-					if(nComplete.indexOf(onn.id) < 0 && nAry.indexOf(onn) < 0) nAry.push(onn);
-				}
-			}
-
-			var code = glsl.reverse().join("\n\r");
-			console.log("==FINAL CODE================");
-			console.log(code);
-			console.log("==FINAL CODE================");
-			return code;
-		}
-
-		function glsl(frag){
-			return { v:`#version 300 es
-			layout(location=0) in vec3 a_position;
-			layout(location=2) in vec2 a_uv;
-
-			out vec2 o_uv;
-
-			void main(void){
-				o_uv = a_uv;
-				gl_Position	= vec4(a_position,1.0); //matProjection * 
-			}`,
-
-			f:`#version 300 es
-			precision mediump float;
-			in vec2 o_uv;
-
-			float rand(vec2 n){ return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453); }
-
-			float noise2D(vec2 p){
-				vec2 ip = floor(p);
-				vec2 u = fract(p);
-				u = u*u*(3.0-2.0*u);
-
-				float res = mix(
-					mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x),
-					mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y);
-				return res*res;
-			}
-
-			out vec4 finalColor;
-			void main(void){
-				${frag}
-				//float n = noise(o_uv * 40.5);
-				//n = smoothstep(0.3,0.35,n);
-				//outColor = vec4(n,n,n,1.0);
-				//outColor = vec4(1.0,0.0,0.0,1.0);
-			}`};
-		}
-
-
-		class FloatNode extends NodeBox{
-			constructor(){
-				super(150);
-				this.setPosition(280,220)
-					.setHeader("Float")
-					.addOutput("Float");
-
-				this.id = 1;
-				this.varName = `n${this.id}_f`;
-				this.varValue = "1.0";
-			}
-
-			getOutputVarString(o){
-				return this.varName;
-			}
-
-			getGLSL(){
-				return `float ${this.varName} = ${this.varValue};`;
-			}
-		}
-
-		class Vec4Node extends NodeBox{
-			constructor(){
-				super(150);
-
-				this.setPosition(550,110)
-					.setHeader("Vec4")
-					.addInput("X")
-					.addInput("Y")
-					.addInput("Z")
-					.addInput("W")
-					.addOutput("XYZW");
-
-				this.id = 2;
-				this.varName = `n${this.id}_v4`;
-			}
-
-			getOutputVarString(o){ return this.varName; }
-
-			getGLSL(){
-				var oname, v = {};
-				for(var i in this.inputs){
-					if(!this.inputs[i].isConnected){
-						v[i] = (i == "Z")?"1.0":"0.0";
-						continue;
-					}
-					oname	= this.inputs[i].getOutputName();
-					v[i]	= this.inputs[i].getOutputNode().getOutputVarString(oname);
-				}
-
-				return `vec4 ${this.varName} = vec4(${v.X}, ${v.Y}, ${v.Z}, ${v.W});`;
-			}
-		}
-
-		class NoiseNode extends NodeBox{
-			constructor(){
-				super(120);
-				this.setPosition(210,40)
-					.setHeader("Noise2D")
-					.addInput("Vec2")
-					.addOutput("F");
-
-				this.id = 3;
-				this.varName = `n${this.id}_no2D`;
-			}
-
-			getOutputVarString(o){
-				return this.varName;
-			}
-
-			getGLSL(){
-				if(!this.inputs.Vec2.isConnected){
-					console.log("Noise2D","Vec2 is not connected");
-					return null;
-				}
-				var oName = this.inputs.Vec2.getOutputName();
-				var oVar = this.inputs.Vec2.getOutputNode().getOutputVarString(oName);
-
-				return `float ${this.varName} = noise2D(${oVar});`;
-			}
-		}
-
-		class GlobalNode extends NodeBox{
-			constructor(){
-				super(150);
-				this.setPosition(10,300)
-					.setHeader("Global")
-					.addOutput("UV");
-
-					this.id = 4;
-			}
-
-			getOutputVarString(o){
-				switch(o){
-					case "UV": return "o_uv";
-				}
-				return null;
-			}
-
-			getGLSL(){ return null; }
-		}
-
-		class FinalColorNode extends NodeBox{
-			constructor(){
-				super(150);
-				this.setPosition(830,200)
-					.setHeader("Final Color")
-					.addInput("RGBA");
-				this.id = 0;
-			}
-
-			getGLSL(){
-				var iconn = this.inputs.RGBA;
-				if(!iconn.isConnected) return null;
-
-				var oName = iconn.getOutputName();
-				var varName = iconn.getOutputNode().getOutputVarString(oName);
-
-				return "finalColor = " + varName + ";";
-			}
-		}
-
-		class MultiNode extends NodeBox{
-			constructor(){
-				super(120);
-				this.setPosition(40,30)
-					.setHeader("Multi")
-					.addInput("v2")
-					.addOutput("v2");
-
-				this.id = 5;
-				this.value = 40.5;
-			}
-
-			getOutputVarString(o){
-				var oName = this.inputs.v2.getOutputName();
-				var oVar = this.inputs.v2.getOutputNode().getOutputVarString(oName);
-
-				return `${oVar} * ${this.value}`;
-			}
-
-			getGLSL(){ return null; }
-		}
-
-		class SmoothStepNode extends NodeBox{
-			constructor(){
-				super(120);
-				this.setPosition(370,30)
-					.setHeader("SmoothStep")
-					.addInput("f")
-					.addOutput("f");
-				this.id = 6;
-				this.varName = `n${this.id}_sstep`;
-			}
-
-			getOutputVarString(o){
-				return this.varName;
-			}
-
-			getGLSL(){
-				if(!this.inputs.f.isConnected){
-					console.log("SmoothStep","F is not connected");
-					return null;
-				}
-
-				var oName = this.inputs.f.getOutputName();
-				var oVar = this.inputs.f.getOutputNode().getOutputVarString(oName);
-
-				return `float ${this.varName} = smoothstep(0.3,0.35,${oVar});`;
-			}
-		}
 	</script>
 </body>
 </html>

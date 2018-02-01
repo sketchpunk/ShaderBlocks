@@ -19,18 +19,26 @@ function buildBox(){
 
 
 //------------------------------------------------------
-
+/*
+	Notes:
+		May need some events
+			onInputConnection(state,iName) //Connected / Disconnected
+			onMove() // Update connection paths
+*/
 //------------------------------------------------------
 class NodeBox{
-	constructor(w=200, h=null){
+	constructor(w=null, h=null){
 		this.ui = buildBox();
-		this.setSize(w,h);
+		if(w != null || h != null) this.setSize(w,h);
 
 		//..............................
 		this.inputs		= {};
 		this.inputLen	= 0; //TODO, not sure if I need Lengths
 		this.outputs	= {};
 		this.outputLen	= 0;
+
+		this.options = {};
+		this.optionLen = 0;
 
 		//..............................
 		//Setup Events
@@ -56,8 +64,7 @@ class NodeBox{
 	onNodeDragging(state,x,y,ox,oy){
 		switch(state){
 			case Sage.DRAG_MOVE: 
-				this.setPosition(ox,oy);
-				this.update();
+				this.setPosition(ox,oy).update();
 			break;
 
 			case Sage.DRAG_END:
@@ -76,15 +83,15 @@ class NodeBox{
 	}
 
 
-
-
 	//................................................
 	// Input / Output
 	getInput(name){ return (this.inputs[name] !== undefined)? this.inputs[name] : null; }
 	getOutput(name){ return (this.outputs[name] !== undefined)? this.outputs[name] : null; }
 
-	addInput(name,data=null){
+	addInput(name,cls = null,data=null){
 		var conn = new IConnector(name,this,this.ui.leftOptions,data);
+		if(cls != null) conn.setClass(cls);
+
 		this.inputs[name] = conn;
 		this.inputLen++;
 		return this;
@@ -108,18 +115,40 @@ class NodeBox{
 
 
 	//................................................
+	// Options
+	addOption(name,opt){
+		this.options[name] = opt;
+		this.optionLen++;
+
+		this.ui.content.appendChild(opt.container);
+		return this;
+	}
+
+
+	//................................................
 	// Getters / Setters
-	setHeader(txt){ this.ui.header.innerHTML = txt; return this; }
+	setHeader(txt, alsoToolTip = false){ 
+		this.ui.header.innerHTML = txt;
+		if(alsoToolTip) this.ui.header.title = txt;
+		return this;
+	}
+
 	setSize(w=null,h=null){
-		if(w != null) this.ui.content.style.width		= w + "px";
+		if(w != null){
+			this.ui.content.style.width	= w + "px";
+			this.ui.header.style.width	= w + "px";
+		}
+
 		if(h != null) this.ui.content.style.height	= h + "px";
 		return this;
 	}
+	
 	setPosition(x,y){
 		this.ui.container.style.left = x + "px";
 		this.ui.container.style.top = y + "px";
 		return this;
 	}
+	
 	getPosition(){
 		var rect = this.ui.root.getBoundingClientRect();
 		return {x:rect.left,y:rect.top};

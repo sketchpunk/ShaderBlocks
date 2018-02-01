@@ -22,7 +22,7 @@ function MoveConn_Move(e){
 
 function MoveConn_End(e){
 	e.stopPropagation(); e.preventDefault();
-	console.log(e.target);
+
 	//If its an input connector, begin connection.
 	if(e.target.iconn !== undefined){
 		mDragConn.connect(e.target.iconn).updatePosition();
@@ -32,7 +32,7 @@ function MoveConn_End(e){
 	}
 
 	//Clear out references
-	mDragConn		= null;
+	mDragConn = null;
 
 	//Remove global drag handlers.
 	window.removeEventListener("mousemove",MoveConn_Move);
@@ -142,6 +142,8 @@ class Connection{
 
 		return [ r.left + x, r.top + r.height*0.5 ];
 	}
+
+	getOutputResult(){ return this.OConn.node.getOutputResult(this.OConn.name); }
 }
 
 
@@ -161,6 +163,7 @@ class Connector{
 	}
 
 	set(txt){ this.ui.label.innerHTML = txt; return this; }
+	setClass(cls){ this.ui.container.classList = cls; return this; }
 
 	getConnRect(){ return this.ui.container.getBoundingClientRect(); }
 	/*
@@ -201,13 +204,22 @@ class IConnector extends Connector{
 	disconnect(){ this.conn = null; this.isConnected = false; }
 	update(){ if(this.conn != null) this.conn.updatePosition(); }
 
+	/* TODO : Prob get rid off.
 	getOutputName(){
 		if(this.conn == null) return null;
 		return this.conn.oConnector.name;
-	}
+	}*/
 	getOutputNode(){
 		if(this.conn == null) return null;
 		return this.conn.outputNode;
+	}
+	
+
+	getOutputResult(){
+		return (!this.conn)? null : this.conn.getOutputResult();
+		//if(!this.conn) return null;
+
+		//return this.conn.outputNode.getOutputResult(this.conn.OConn.name);
 	}
 }
 

@@ -105,7 +105,7 @@ class Shader{
 		if(this.program == null) return this;
 
 		//unbind the program if its currently active
-		if(this.gl.ctx.getParameter(gl.ctx.CURRENT_PROGRAM) === this.program) this.gl.ctx.useProgram(null);
+		if(this.gl.ctx.getParameter(this.gl.ctx.CURRENT_PROGRAM) === this.program) this.gl.ctx.useProgram(null);
 		this.gl.ctx.deleteProgram(this.program);
 		this.program = null;
 		return this;
